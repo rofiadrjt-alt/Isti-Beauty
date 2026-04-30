@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://isti-beauty.com/sitemap.xml

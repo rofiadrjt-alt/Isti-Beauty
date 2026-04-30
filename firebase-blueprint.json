@@ -1,0 +1,100 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Product catalog item",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "category": { "type": "string" },
+        "shopeeLink": { "type": "string" },
+        "tokpedLink": { "type": "string" }
+      },
+      "required": ["name", "price"]
+    },
+    "Setting": {
+      "title": "Setting",
+      "description": "Global application setting",
+      "type": "object",
+      "properties": {
+        "value": { "type": "string" },
+        "type": { "type": "string" },
+        "totalChunks": { "type": "number" }
+      },
+      "required": []
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Administrator user record",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" }
+      },
+      "required": ["email"]
+    },
+    "Testimonial": {
+      "title": "Testimonial",
+      "description": "Customer feedback",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "text": { "type": "string" },
+        "rating": { "type": "number" },
+        "beforeUrl": { "type": "string" },
+        "afterUrl": { "type": "string" }
+      },
+      "required": ["name", "text", "rating"]
+    },
+    "Faq": {
+      "title": "FAQ",
+      "description": "Frequently Asked Questions",
+      "type": "object",
+      "properties": {
+        "q": { "type": "string" },
+        "a": { "type": "string" }
+      },
+      "required": ["q", "a"]
+    },
+    "Article": {
+      "title": "Article",
+      "description": "Beauty journal article",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "image": { "type": "string" },
+        "category": { "type": "string" }
+      },
+      "required": ["title", "content"]
+    }
+  },
+  "firestore": {
+    "products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Products available"
+    },
+    "settings/{settingId}": {
+      "schema": { "$ref": "#/entities/Setting" },
+      "description": "Global settings for hero, links, texts"
+    },
+    "testimonials/{testimonialId}": {
+      "schema": { "$ref": "#/entities/Testimonial" },
+      "description": "Customer testimonials"
+    },
+    "faqs/{faqId}": {
+      "schema": { "$ref": "#/entities/Faq" },
+      "description": "Frequently asked questions"
+    },
+    "articles/{articleId}": {
+      "schema": { "$ref": "#/entities/Article" },
+      "description": "Articles for Beauty Journal"
+    },
+    "admins/{adminId}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Administrator users"
+    }
+  }
+}

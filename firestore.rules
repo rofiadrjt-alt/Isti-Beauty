@@ -1,0 +1,130 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // -------------------------------------------------------------------------
+    // 0. Global Safety Net
+    // -------------------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // 1. Primitive Helpers
+    // -------------------------------------------------------------------------
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == 'rofiadrjt@gmail.com'
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // -------------------------------------------------------------------------
+    // 2. Validation Blueprints
+    // -------------------------------------------------------------------------
+    
+    function isValidProduct(data) {
+      return data.keys().hasAll(['name', 'price']) &&
+             data.keys().size() <= 10 && 
+             data.name is string && data.name.size() > 0 && data.name.size() <= 200 &&
+             data.price is number && data.price >= 0 &&
+             (!data.keys().contains('description') || (data.description is string && data.description.size() <= 2000)) &&
+             (!data.keys().contains('imageUrl') || (data.imageUrl is string && data.imageUrl.size() <= 2000000)) &&
+             (!data.keys().contains('category') || (data.category is string && data.category.size() <= 100)) &&
+             (!data.keys().contains('shopeeLink') || (data.shopeeLink is string && data.shopeeLink.size() <= 1000)) &&
+             (!data.keys().contains('tokpedLink') || (data.tokpedLink is string && data.tokpedLink.size() <= 1000));
+    }
+
+    function isValidSetting(data) {
+      return data.keys().size() <= 6 &&
+             (!data.keys().contains('value') || (data.value is string && data.value.size() <= 1000000)) &&
+             (!data.keys().contains('type') || (data.type is string && data.type.size() <= 100)) &&
+             (!data.keys().contains('totalChunks') || (data.totalChunks is number));
+    }
+
+    function isValidTestimonial(data) {
+      return data.keys().hasAll(['name', 'text', 'rating']) &&
+             data.keys().size() <= 10 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.text is string && data.text.size() <= 2000 &&
+             data.rating is number && data.rating >= 0 && data.rating <= 5 &&
+             (!data.keys().contains('beforeUrl') || (data.beforeUrl is string && data.beforeUrl.size() <= 1000000)) &&
+             (!data.keys().contains('afterUrl') || (data.afterUrl is string && data.afterUrl.size() <= 1000000));
+    }
+
+    function isValidFaq(data) {
+      return data.keys().hasAll(['q', 'a']) &&
+             data.keys().size() <= 5 &&
+             data.q is string && data.q.size() <= 500 &&
+             data.a is string && data.a.size() <= 3000;
+    }
+
+    function isValidArticle(data) {
+      return data.keys().hasAll(['title', 'content']) &&
+             data.keys().size() <= 10 &&
+             data.title is string && data.title.size() <= 300 &&
+             data.content is string && data.content.size() <= 2000000 &&
+             (!data.keys().contains('image') || (data.image is string && data.image.size() <= 2000000)) &&
+             (!data.keys().contains('category') || (data.category is string && data.category.size() <= 100));
+    }
+
+    // -------------------------------------------------------------------------
+    // 3. Match Blocks
+    // -------------------------------------------------------------------------
+
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(productId) && isValidProduct(incoming());
+      allow update: if isAdmin() && isValidProduct(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(settingId) && isValidSetting(incoming());
+      allow update: if isAdmin() && isValidSetting(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /testimonials/{testimonialId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(testimonialId) && isValidTestimonial(incoming());
+      allow update: if isAdmin() && isValidTestimonial(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /faqs/{faqId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(faqId) && isValidFaq(incoming());
+      allow update: if isAdmin() && isValidFaq(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /articles/{articleId} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidId(articleId) && isValidArticle(incoming());
+      allow update: if isAdmin() && isValidArticle(incoming());
+      allow delete: if isAdmin();
+    }
+
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}
